@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+ai_engine/venv/
+.env
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+.DS_Store
+
+# Databases
+*.db
+ai_engine/zakattrack.db
+
+# Environment-specific
+.gemini/
+.agent/
+.agents/
+brain/
+tmp/
