@@ -34,22 +34,33 @@ Didesain untuk surveyor yang bekerja di daerah minim sinyal.
 
 ---
 
-## 🏗️ Arsitektur Teknis
+## 🏗️ Arsitektur & Pipeline Data
+
+ZakatTrack menggunakan arsitektur modern berbasis mikroservis asinkron untuk menangani beban analitik yang berat tanpa mengorbankan pengalaman pengguna.
 
 ```mermaid
-graph TD
-    A[Surveyor App / React] -->|Rest API| B[FastAPI Gateway]
-    B --> C{Decision Engine}
-    C -->|SAW Logic| D[Priority Scorer]
-    C -->|Naive Bayes| E[Asnaf Classifier]
-    D --> F[(SQLite/PostgreSQL)]
-    B -->|Async| G[Ollama Cloud AI]
-    A -->|Offline Sync| H[LocalStorage]
+sequenceDiagram
+    participant S as Surveyor (React)
+    participant G as FastAPI Gateway
+    participant D as DB (SQLite/Async)
+    participant A as AI Scorer (SAW)
+    participant O as Ollama AI (Async)
+
+    S->>G: Post Mustahik Data
+    G->>A: Calculate Priority Score
+    A-->>G: Returned Score (0-100)
+    G->>D: Save with Asnaf & Score
+    G-->>S: Response 201 (Created)
+    
+    Note over G,O: Background Task (Async)
+    G->>O: Request AI Insight
+    O-->>G: JSON Insight
+    G->>D: Cache Insight
 ```
 
 ### Stack Teknologi
 - **Frontend**: React.js, Vite, Leaflet (Map), Lucide Icons, Glassmorphism UI.
-- **Backend**: FastAPI (Python 3.11), SQLAlchemy, Pydantic.
+- **Backend**: FastAPI (Python 3.11), SQLAlchemy (Async), Pydantic v2.
 - **AI**: Ollama Cloud API (Model: `ministral-3:8b`).
 - **Algorithm**: Simple Additive Weighting (SAW) untuk Multi-Criteria Decision Making.
 
@@ -85,15 +96,37 @@ npm run dev
 
 ---
 
-## 📊 Matriks Penilaian SAW (Logika Inti)
+## 📊 Logika Matematika & Algoritma
 
-Sistem memberikan skor **0-100** berdasarkan kriteria berikut:
-1. **Pendapatan (C1)** - Bobot 30% (Semakin kecil = makin berhak).
-2. **Tanggungan (C2)** - Bobot 25% (Semakin banyak = makin berhak).
-3. **Aset (C3)** - Bobot 15%.
-4. **Status Rumah (C4)** - Bobot 10%.
-5. **Pengeluaran (C5)** - Bobot 10%.
-6. **Kesehatan/Disabilitas (C6)** - Bobot 10%.
+### 1. Klasifikasi Asnaf (Economic Threshold)
+Sistem menggunakan ambang batas Garis Kemiskinan (GK) spesifik daerah untuk menentukan kategori mustahik secara otomatis:
+
+$$Income_{pc} = \frac{Income_{total}}{Dependents}$$
+
+Kategorisasi mengikuti formula:
+- **Fakir**: $Income_{pc} < 0.5 \times GK$
+- **Miskin**: $0.5 \times GK \leq Income_{pc} < GK$
+- **Mampu**: $Income_{pc} \geq GK$
+
+### 2. Algoritma Simple Additive Weighting (SAW)
+Perangkingan prioritas penyaluran dihitung menggunakan normalisasi matriks keputusan ($R$) dan bobot kriteria ($W$):
+
+#### A. Normalisasi Matriks ($r_{ij}$)
+- **Kriteria Keuntungan (Benefit)**: $r_{ij} = \frac{x_{ij}}{max(x_i)}$
+- **Kriteria Biaya (Cost)**: $r_{ij} = \frac{min(x_i)}{x_{ij}}$
+
+#### B. Perhitungan Skor Akhir ($V_i$)
+$$V_i = \sum_{j=1}^{n} w_j r_{ij}$$
+
+**Matriks Kriteria:**
+| Kriteria | Deskripsi | Tipe | Bobot ($w$) |
+| :--- | :--- | :--- | :--- |
+| **C1** | Pendapatan | Cost | 0.30 |
+| **C2** | Tanggungan | Benefit | 0.25 |
+| **C3** | Aset | Cost | 0.15 |
+| **C4** | Status Rumah | Cost | 0.10 |
+| **C5** | Pengeluaran | Cost | 0.10 |
+| **C6** | Kesehatan | Benefit | 0.10 |
 
 ---
 

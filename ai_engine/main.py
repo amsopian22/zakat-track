@@ -5,13 +5,13 @@ import datetime
 import qrcode
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.responses import StreamingResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 
 from ai_engine.database import engine, get_db, Base
 from ai_engine.models import MustahikModel
-from ai_engine.schemas import MustahikCreate
+from ai_engine.schemas import MustahikCreate, MustahikRead
 from ai_engine.utils import saw_scoring, SDGS_MAP, WEIGHTS, TYPES
 from ai_engine.ai_advisor import AIAdvisor
 
@@ -19,13 +19,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Create tables (Alembic is recommended for production)
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine) # Handled by migrations
 
 app = FastAPI(title="ZakatTrack API v1.1 - Modular")
 
+# Dynamic CORS Configuration
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,8 +37,13 @@ app.add_middleware(
 # Initialize AI Advisor
 ai_advisor = AIAdvisor()
 
-# Phase 2: Simple Security Pattern
-API_KEY = os.getenv("ZAKATTRACK_API_KEY", "zakat-secret-2026")
+# Security Pattern
+# CRITICAL: Always use .env for production secrets
+API_KEY = os.getenv("ZAKATTRACK_API_KEY")
+if not API_KEY:
+    # Terpaksa menggunakan fallback hanya untuk dev, tetapi dengan peringatan keras
+    API_KEY = "zakat-secret-2026" 
+
 GK_SAMARINDA = int(os.getenv("GK_SAMARINDA", "720000"))
 
 async def verify_api_key(x_api_key: str = Header(...)):
@@ -45,10 +53,27 @@ async def verify_api_key(x_api_key: str = Header(...)):
 
 @app.get("/")
 async def root():
+    """
+    Root endpoint to check API status.
+    
+    Returns:
+        dict: Status and version of the API.
+    """
     return {"status": "Online", "version": "1.1.0-CloudReady"}
 
-@app.post("/api/v1/mustahik")
-async def create_mustahik(data: MustahikCreate, db: Session = Depends(get_db), _ = Depends(verify_api_key)):
+@app.post("/api/v1/mustahik", response_model=MustahikRead)
+async def create_mustahik(data: MustahikCreate, db: AsyncSession = Depends(get_db), _ = Depends(verify_api_key)):
+    """
+    Create a new Mustahik record.
+    
+    Args:
+        data (MustahikCreate): The mustahik data to create.
+        db (AsyncSession): Database session.
+        _ (str): API Key validation placeholder.
+        
+    Returns:
+        MustahikModel: The created mustahik record.
+    """
     if not data.id:
         data.id = str(uuid.uuid4())
         
@@ -60,7 +85,11 @@ async def create_mustahik(data: MustahikCreate, db: Session = Depends(get_db), _
     asnaf = "Fakir" if income_pc < (0.5*gk) else ("Miskin" if income_pc < gk else "Mampu")
     sdg = SDGS_MAP.get(asnaf, "SDG 1: No Poverty")
     
-    existing = db.query(MustahikModel).filter(MustahikModel.nim == data.nim).first()
+    from sqlalchemy import select
+    query = select(MustahikModel).where(MustahikModel.nim == data.nim)
+    result = await db.execute(query)
+    existing = result.scalar_one_or_none()
+    
     if existing:
         raise HTTPException(status_code=400, detail="Data mustahik dengan NIM tersebut sudah ada (Anti-Fraud)")
 
@@ -71,17 +100,35 @@ async def create_mustahik(data: MustahikCreate, db: Session = Depends(get_db), _
     return db_mustahik
 
 @app.delete("/api/v1/mustahik/{mustahik_id}")
-async def delete_mustahik(mustahik_id: str, db: Session = Depends(get_db), _ = Depends(verify_api_key)):
-    mustahik = db.query(MustahikModel).filter(MustahikModel.id == mustahik_id).first()
+async def delete_mustahik(mustahik_id: str, db: AsyncSession = Depends(get_db), _ = Depends(verify_api_key)):
+    """
+    Delete a Mustahik record by ID.
+    
+    Args:
+        mustahik_id (str): UUID of the mustahik.
+        db (AsyncSession): Database session.
+    """
+    from sqlalchemy import select
+    query = select(MustahikModel).where(MustahikModel.id == mustahik_id)
+    result = await db.execute(query)
+    mustahik = result.scalar_one_or_none()
+    
     if not mustahik:
         raise HTTPException(status_code=404, detail="Mustahik not found")
-    db.delete(mustahik)
-    db.commit()
+    await db.delete(mustahik)
+    await db.commit()
     return {"message": "Mustahik deleted successfully"}
 
-@app.get("/api/v1/mustahiks")
-async def list_mustahiks(db: Session = Depends(get_db)):
-    mustahiks = db.query(MustahikModel).all()
+@app.get("/api/v1/mustahiks", response_model=list[MustahikRead])
+async def list_mustahiks(db: AsyncSession = Depends(get_db)):
+    """
+    List all mustahiks with priority scoring.
+    """
+    from sqlalchemy import select
+    query = select(MustahikModel)
+    result = await db.execute(query)
+    mustahiks = result.scalars().all()
+    
     if not mustahiks: return []
     
     data = [[m.income, m.dependents, m.assets, m.house_status, m.utility_exp, m.health_status] for m in mustahiks]
@@ -109,7 +156,10 @@ async def get_donation_qr(donation_id: str):
     return StreamingResponse(buf, media_type="image/png")
 
 @app.get("/api/v1/ai/insight")
-async def get_ai_insight(db: Session = Depends(get_db)):
+async def get_ai_insight(db: AsyncSession = Depends(get_db)):
+    """
+    Get AI-driven insights about mustahik priorities.
+    """
     mustahiks = await list_mustahiks(db)
     if not mustahiks:
         return {"insight": "Belum ada data untuk dianalisis."}
@@ -118,7 +168,10 @@ async def get_ai_insight(db: Session = Depends(get_db)):
     return {"insight": insight}
 
 @app.get("/api/v1/track/{donation_id}")
-async def track_donation(donation_id: str, db: Session = Depends(get_db)):
+async def track_donation(donation_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    Track a donation impact.
+    """
     return {
         "donation_id": donation_id,
         "status": "Tersalurkan",

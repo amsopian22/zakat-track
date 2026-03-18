@@ -34,3 +34,12 @@ class MustahikCreate(BaseModel):
         if v is not None and (v < -180 or v > 180):
             raise ValueError('Longitude must be between -180 and 180')
         return v
+
+class MustahikRead(MustahikCreate):
+    asnaf_category: Optional[str] = None
+    priority_score: Optional[float] = None
+    sdgs_label: Optional[str] = None
+    created_at: Optional[str] = None # Or datetime if handled
+
+    class Config:
+        from_attributes = True

@@ -8,3 +8,4 @@ qrcode[pil]
 pillow
 python-multipart
 python-dotenv
+aiosqlite
