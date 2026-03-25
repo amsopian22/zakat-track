@@ -9,3 +9,5 @@ pillow
 python-multipart
 python-dotenv
 aiosqlite
+httpx
+pytest-asyncio

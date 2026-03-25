@@ -144,4 +144,22 @@ Kami menerima kontribusi untuk pengembangan lebih lanjut. Silakan buat *Pull Req
 Didistribusikan di bawah Lisensi MIT. Lihat `LICENSE` untuk informasi lebih lanjut.
 
 ---
-*Dikembangkan untuk masa depan filantropi Islam oleh Antigravity AI @ PIDI 4.0 Ecosystem.*
+---
+### 💰 Ekosistem Penyaluran (Donation API)
+Endpoint baru untuk mengelola transparansi dana:
+- `POST /api/v1/donation`: Mencatat dana masuk dari Muzakki.
+- `POST /api/v1/donation/disburse`: Menyalurkan dana ke Mustahik + Auto SDG tagging.
+- `GET /api/v1/donations`: Riwayat transaksi lengkap.
+
+## 📝 Update Terbaru (25 Maret 2026)
+
+### ⚙️ Status Operasional
+- **Backend (FastAPI)**: Telah diverifikasi berjalan di port 8000 menggunakan lingkungan `agentic_ai`.
+- **Frontend (Vite)**: Dikonfigurasi untuk port 5173 dengan host `0.0.0.0` untuk aksesibilitas yang lebih luas.
+- **Verifikasi Logika**: Logika penginputan donasi dan survey telah disinkronkan untuk mendukung alur kerja *offline-first*.
+
+### 🚀 Deployment
+- Sinkronisasi otomatis ke GitHub untuk integrasi CI/CD yang lebih baik.
+
+---
+*Dikembangkan oleh Antigravity AI @ PIDI 4.0 Ecosystem.*

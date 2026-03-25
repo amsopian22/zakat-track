@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 const QRModal = ({ isOpen, onClose, apiBase }) => {
+  const transactionId = useMemo(() => Math.floor(Math.random() * 9999), []);
+  const donId = useMemo(() => Math.floor(Math.random() * 9999), []);
+
   if (!isOpen) return null;
 
   return (
@@ -29,10 +32,10 @@ const QRModal = ({ isOpen, onClose, apiBase }) => {
         Scan QR di bawah untuk melakukan pembayaran zakat/infak secara instan:
       </p>
       <div style={{ background: 'white', padding: '15px', borderRadius: '12px', display: 'inline-block', boxShadow: '0 0 25px rgba(255,255,255,0.1)' }}>
-        <img src={`${apiBase}/api/v1/donation/qrcode/DON-${Math.floor(Math.random()*9999)}`} style={{ width: '200px', height: '200px' }} alt="QRIS" />
+        <img src={`${apiBase}/api/v1/donation/qrcode/DON-${donId}`} style={{ width: '200px', height: '200px' }} alt="QRIS" />
       </div>
       <div style={{ margin: '1.5rem 0', padding: '12px', background: 'rgba(245, 158, 11, 0.05)', borderRadius: '10px', fontSize: '0.75rem', border: '1px solid rgba(245, 158, 11, 0.1)' }}>
-        <p>ID Transaksi: <strong>#TRX-{Math.floor(Math.random()*9999)}</strong></p>
+        <p>ID Transaksi: <strong>#TRX-{transactionId}</strong></p>
         <p>Merchant: <strong>ZAKATTRACK DIGITAL</strong></p>
       </div>
       <button onClick={onClose} style={{ width: '100%', background: 'var(--accent-secondary)', fontWeight: 'bold' }}>BATALKAN</button>

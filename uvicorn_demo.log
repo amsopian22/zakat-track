@@ -1,0 +1,17 @@
+INFO:     Started server process [76629]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+/Users/bidang4/Projects/3_Other_Projects/ZakatTrack/ai_engine/main.py:104: RuntimeWarning: coroutine 'AsyncSession.commit' was never awaited
+  db.commit()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+/Users/bidang4/Projects/3_Other_Projects/ZakatTrack/ai_engine/main.py:105: RuntimeWarning: coroutine 'AsyncSession.refresh' was never awaited
+  db.refresh(db_mustahik)
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:     127.0.0.1:65496 - "POST /api/v1/mustahik HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65497 - "POST /api/v1/donation HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65498 - "POST /api/v1/donation/disburse HTTP/1.1" 404 Not Found
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [76629]

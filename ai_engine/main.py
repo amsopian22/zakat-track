@@ -10,8 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 
 from ai_engine.database import engine, get_db, Base
-from ai_engine.models import MustahikModel
-from ai_engine.schemas import MustahikCreate, MustahikRead
+from ai_engine.models import MustahikModel, DonationModel
+from ai_engine.schemas import MustahikCreate, MustahikRead, DonationCreate, DonationRead, DonationDisburse
 from ai_engine.utils import saw_scoring, SDGS_MAP, WEIGHTS, TYPES
 from ai_engine.ai_advisor import AIAdvisor
 
@@ -21,14 +21,23 @@ load_dotenv()
 # Create tables (Alembic is recommended for production)
 # Base.metadata.create_all(bind=engine) # Handled by migrations
 
-app = FastAPI(title="ZakatTrack API v1.1 - Modular")
+from contextlib import asynccontextmanager
 
-# Dynamic CORS Configuration
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+
+app = FastAPI(title="ZakatTrack API v1.1 - Modular", lifespan=lifespan)
+
+# --- Dynamic Configuration ---
+# CORS Setup
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174").split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -46,9 +55,9 @@ if not API_KEY:
 
 GK_SAMARINDA = int(os.getenv("GK_SAMARINDA", "720000"))
 
-async def verify_api_key(x_api_key: str = Header(...)):
-    if x_api_key != API_KEY:
-        raise HTTPException(status_code=403, detail="Akses ditolak: API Key tidak valid")
+async def verify_api_key(x_api_key: Optional[str] = Header(None)):
+    if x_api_key is None or x_api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Akses ditolak: API Key tidak valid atau tidak disertakan")
     return x_api_key
 
 @app.get("/")
@@ -95,8 +104,8 @@ async def create_mustahik(data: MustahikCreate, db: AsyncSession = Depends(get_d
 
     db_mustahik = MustahikModel(**data.model_dump(), asnaf_category=asnaf, sdgs_label=sdg)
     db.add(db_mustahik)
-    db.commit()
-    db.refresh(db_mustahik)
+    await db.commit()
+    await db.refresh(db_mustahik)
     return db_mustahik
 
 @app.delete("/api/v1/mustahik/{mustahik_id}")
@@ -179,3 +188,68 @@ async def track_donation(donation_id: str, db: AsyncSession = Depends(get_db)):
         "location": {"lat": -0.502, "lng": 117.153},
         "description": "Dana disalurkan untuk bantuan sembako dan modal usaha."
     }
+
+# --- Donation Ecosystem Endpoints ---
+
+@app.post("/api/v1/donation", response_model=DonationRead)
+async def record_donation(data: DonationCreate, db: AsyncSession = Depends(get_db), _ = Depends(verify_api_key)):
+    """
+    Record a new incoming donation from a Muzakki.
+    """
+    donation_id = str(uuid.uuid4())
+    # Simple hash for QR (in real app, use more secure or unique data)
+    qr_hash = str(uuid.uuid4()).split('-')[0].upper()
+    
+    db_donation = DonationModel(
+        id=donation_id,
+        muzakki_name=data.muzakki_name,
+        amount=data.amount,
+        transaction_type="IN",
+        status="PENDING",
+        sdgs_goal=data.sdgs_goal,
+        qr_code_hash=qr_hash
+    )
+    db.add(db_donation)
+    await db.commit()
+    await db.refresh(db_donation)
+    return db_donation
+
+@app.post("/api/v1/donation/disburse", response_model=DonationRead)
+async def disburse_donation(data: DonationDisburse, db: AsyncSession = Depends(get_db), _ = Depends(verify_api_key)):
+    """
+    Disburse an existing donation to a specific Mustahik.
+    """
+    from sqlalchemy import select
+    # 1. Get Donation
+    res = await db.execute(select(DonationModel).where(DonationModel.id == data.donation_id))
+    donation = res.scalar_one_or_none()
+    if not donation:
+        raise HTTPException(status_code=404, detail="Donasi tidak ditemukan")
+    
+    if donation.status == "DISBURSED":
+        raise HTTPException(status_code=400, detail="Donasi sudah disalurkan sebelumnya")
+    
+    # 2. Get Mustahik for SDG Labeling
+    res_m = await db.execute(select(MustahikModel).where(MustahikModel.id == data.mustahik_id))
+    mustahik = res_m.scalar_one_or_none()
+    if not mustahik:
+        raise HTTPException(status_code=404, detail="Mustahik tidak ditemukan")
+    
+    # 3. Update Donation
+    donation.mustahik_id = data.mustahik_id
+    donation.status = "DISBURSED"
+    donation.transaction_type = "OUT"
+    donation.sdgs_goal = mustahik.sdgs_label or "SDG 1: No Poverty"
+    
+    await db.commit()
+    await db.refresh(donation)
+    return donation
+
+@app.get("/api/v1/donations", response_model=list[DonationRead])
+async def list_donations(db: AsyncSession = Depends(get_db)):
+    """
+    Get all donation transactions history.
+    """
+    from sqlalchemy import select
+    res = await db.execute(select(DonationModel).order_by(DonationModel.transaction_date.desc()))
+    return res.scalars().all()

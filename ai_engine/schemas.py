@@ -1,5 +1,6 @@
-from pydantic import BaseModel, field_validator, Field
+from pydantic import BaseModel, field_validator, Field, ConfigDict
 from typing import Optional
+from datetime import datetime
 
 class MustahikCreate(BaseModel):
     id: Optional[str] = None
@@ -39,7 +40,25 @@ class MustahikRead(MustahikCreate):
     asnaf_category: Optional[str] = None
     priority_score: Optional[float] = None
     sdgs_label: Optional[str] = None
-    created_at: Optional[str] = None # Or datetime if handled
+    created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+class DonationCreate(BaseModel):
+    muzakki_name: str = Field(..., min_length=2)
+    amount: float = Field(..., ge=1000)
+    sdgs_goal: Optional[str] = "SDG 1: No Poverty"
+
+class DonationDisburse(BaseModel):
+    mustahik_id: str
+    donation_id: str
+
+class DonationRead(DonationCreate):
+    id: str
+    mustahik_id: Optional[str] = None
+    transaction_type: str
+    status: str
+    transaction_date: datetime
+    qr_code_hash: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)

@@ -1,38 +1,27 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { X, Save, ArrowLeft, ArrowRight, CheckCircle, MapPin, DollarSign, Info, WifiOff } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-
-// Fix icon issue
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
-});
-L.Marker.prototype.options.icon = DefaultIcon;
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { X, MapPin, DollarSign, Info, CheckCircle, Save, ArrowRight, ArrowLeft, WifiOff } from 'lucide-react';
 
 const LocationPicker = ({ lat, lng, onPositionChange }) => {
-  const map = useMap();
   const markerRef = useRef(null);
-
-  useEffect(() => {
-    map.setView([lat, lng], map.getZoom());
-  }, [lat, lng, map]);
-
-  const eventHandlers = useMemo(() => ({
-    dragend() {
-      const marker = markerRef.current;
-      if (marker != null) {
-        const pos = marker.getLatLng();
-        onPositionChange(pos.lat, pos.lng);
-      }
+  const map = useMapEvents({
+    click(e) {
+      onPositionChange(e.latlng.lat, e.latlng.lng);
     },
-  }), [onPositionChange]);
+  });
+
+  const eventHandlers = useMemo(
+    () => ({
+      dragend() {
+        const marker = markerRef.current;
+        if (marker != null) {
+          const { lat, lng } = marker.getLatLng();
+          onPositionChange(lat, lng);
+        }
+      },
+    }),
+    [onPositionChange],
+  );
 
   return (
     <Marker
@@ -49,8 +38,10 @@ const SurveyForm = ({ onClose, onSubmit }) => {
   const totalSteps = 4;
   const isOnline = navigator.onLine;
   
+  const generatedId = useMemo(() => Math.random().toString(36).substring(2, 11), []);
+
   const [formData, setFormData] = useState({
-    id: Math.random().toString(36).substr(2, 9),
+    id: generatedId,
     name: '',
     nik: '',
     address: '',

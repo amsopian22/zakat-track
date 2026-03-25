@@ -3,13 +3,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 # Use aiosqlite for async sqlite
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./zakattrack.db")
-if DATABASE_URL.startswith("sqlite://"):
-    DATABASE_URL = DATABASE_URL.replace("sqlite://", "sqlite+aiosqlite://")
+# Gunakan in-memory DB untuk demo agar aman dari permission error di Mac/Sandbox
+DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 engine = create_async_engine(
     DATABASE_URL, 
@@ -24,7 +22,8 @@ AsyncSessionLocal = sessionmaker(
     autoflush=False,
 )
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
 
 async def get_db():
     async with AsyncSessionLocal() as session:
