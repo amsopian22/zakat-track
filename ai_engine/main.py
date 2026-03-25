@@ -53,7 +53,7 @@ if not API_KEY:
     # Terpaksa menggunakan fallback hanya untuk dev, tetapi dengan peringatan keras
     API_KEY = "zakat-secret-2026" 
 
-GK_SAMARINDA = int(os.getenv("GK_SAMARINDA", "720000"))
+GK_SAMARINDA = int(os.getenv("GK_SAMARINDA", "850000"))
 
 async def verify_api_key(x_api_key: Optional[str] = Header(None)):
     if x_api_key is None or x_api_key != API_KEY:
@@ -91,7 +91,15 @@ async def create_mustahik(data: MustahikCreate, db: AsyncSession = Depends(get_d
         
     income_pc = data.income / max(1, data.dependents)
     gk = GK_SAMARINDA
-    asnaf = "Fakir" if income_pc < (0.5*gk) else ("Miskin" if income_pc < gk else "Mampu")
+    
+    # Priority Logic: Gharimin & Fi Sabilillah checked first
+    if data.is_debtor:
+        asnaf = "Gharimin"
+    elif data.is_student:
+        asnaf = "Fi Sabilillah"
+    else:
+        asnaf = "Fakir" if income_pc < (0.5*gk) else ("Miskin" if income_pc < gk else "Mampu")
+        
     sdg = SDGS_MAP.get(asnaf, "SDG 1: No Poverty")
     
     from sqlalchemy import select

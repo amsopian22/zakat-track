@@ -1,0 +1,104 @@
+0 verbose cli /opt/homebrew/Cellar/node/24.2.0/bin/node /opt/homebrew/bin/npm
+1 info using npm@11.3.0
+2 info using node@v24.2.0
+3 silly config load:file:/opt/homebrew/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/bidang4/Projects/3_Other_Projects/ZakatTrack/frontend/.npmrc
+5 silly config load:file:/Users/bidang4/.npmrc
+6 silly config load:file:/opt/homebrew/etc/npmrc
+7 verbose title npm install
+8 verbose argv "install" "--loglevel" "verbose"
+9 verbose logfile logs-max:10 dir:/Users/bidang4/Projects/3_Other_Projects/ZakatTrack/frontend/.npm-cache/_logs/2026-03-25T03_11_04_654Z-
+10 verbose logfile /Users/bidang4/Projects/3_Other_Projects/ZakatTrack/frontend/.npm-cache/_logs/2026-03-25T03_11_04_654Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:2348810240 maxSize:587202560 maxEntrySize:293601280
+13 silly idealTree buildDeps
+14 silly fetch manifest leaflet@^1.9.4
+15 silly packumentCache full:https://registry.npmjs.org/leaflet cache-miss
+16 silly fetch manifest lucide-react@^0.577.0
+17 silly packumentCache full:https://registry.npmjs.org/lucide-react cache-miss
+18 http fetch GET 200 https://registry.npmjs.org/npm 431ms
+19 silly fetch manifest react@^19.2.4
+20 silly packumentCache full:https://registry.npmjs.org/react cache-miss
+21 silly fetch manifest react-dom@^19.2.4
+22 silly packumentCache full:https://registry.npmjs.org/react-dom cache-miss
+23 silly fetch manifest react-leaflet@^5.0.0
+24 silly packumentCache full:https://registry.npmjs.org/react-leaflet cache-miss
+25 silly fetch manifest @eslint/js@^9.39.4
+26 silly packumentCache full:https://registry.npmjs.org/@eslint%2fjs cache-miss
+27 silly fetch manifest @types/react@^19.2.14
+28 silly packumentCache full:https://registry.npmjs.org/@types%2freact cache-miss
+29 silly fetch manifest @types/react-dom@^19.2.3
+30 silly packumentCache full:https://registry.npmjs.org/@types%2freact-dom cache-miss
+31 silly fetch manifest @vitejs/plugin-react@^6.0.0
+32 silly packumentCache full:https://registry.npmjs.org/@vitejs%2fplugin-react cache-miss
+33 silly fetch manifest eslint@^9.39.4
+34 silly packumentCache full:https://registry.npmjs.org/eslint cache-miss
+35 silly fetch manifest eslint-plugin-react-hooks@^7.0.1
+36 silly packumentCache full:https://registry.npmjs.org/eslint-plugin-react-hooks cache-miss
+37 silly fetch manifest eslint-plugin-react-refresh@^0.5.2
+38 silly packumentCache full:https://registry.npmjs.org/eslint-plugin-react-refresh cache-miss
+39 silly fetch manifest globals@^17.4.0
+40 silly packumentCache full:https://registry.npmjs.org/globals cache-miss
+41 silly fetch manifest vite@^8.0.0
+42 silly packumentCache full:https://registry.npmjs.org/vite cache-miss
+43 silly placeDep ROOT @eslint/js@ OK for: frontend@0.0.0 want: ^9.39.4
+44 silly placeDep ROOT @types/react@ OK for: frontend@0.0.0 want: ^19.2.14
+45 silly placeDep ROOT @types/react-dom@ OK for: frontend@0.0.0 want: ^19.2.3
+46 silly placeDep ROOT @vitejs/plugin-react@ OK for: frontend@0.0.0 want: ^6.0.0
+47 silly placeDep ROOT eslint@ OK for: frontend@0.0.0 want: ^9.39.4
+48 silly placeDep ROOT eslint-plugin-react-hooks@ OK for: frontend@0.0.0 want: ^7.0.1
+49 silly placeDep ROOT eslint-plugin-react-refresh@ OK for: frontend@0.0.0 want: ^0.5.2
+50 silly placeDep ROOT globals@ OK for: frontend@0.0.0 want: ^17.4.0
+51 silly placeDep ROOT leaflet@ OK for: frontend@0.0.0 want: ^1.9.4
+52 silly placeDep ROOT lucide-react@ OK for: frontend@0.0.0 want: ^0.577.0
+53 silly placeDep ROOT react@ OK for: frontend@0.0.0 want: ^19.2.4
+54 silly placeDep ROOT react-dom@ OK for: frontend@0.0.0 want: ^19.2.4
+55 silly placeDep ROOT react-leaflet@ OK for: frontend@0.0.0 want: ^5.0.0
+56 silly placeDep ROOT vite@ OK for: frontend@0.0.0 want: ^8.0.0
+57 verbose FetchError: Invalid response body while trying to fetch https://registry.npmjs.org/@eslint%2fjs: EPERM: operation not permitted, open '/Users/bidang4/Projects/3_Other_Projects/ZakatTrack/frontend/.npm-cache/_cacache/tmp/601d74b4'
+    at /opt/homebrew/lib/node_modules/npm/node_modules/minipass-fetch/lib/body.js:170:15
+    at async Response.json (/opt/homebrew/lib/node_modules/npm/node_modules/minipass-fetch/lib/body.js:75:17)
+    at async RegistryFetcher.packument (/opt/homebrew/lib/node_modules/npm/node_modules/pacote/lib/registry.js:98:25)
+    at async RegistryFetcher.manifest (/opt/homebrew/lib/node_modules/npm/node_modules/pacote/lib/registry.js:128:23)
+    at async #fetchManifest (/opt/homebrew/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:1213:20)
+    at async #nodeFromEdge (/opt/homebrew/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:1051:19)
+    at async #buildDepStep (/opt/homebrew/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:915:11)
+    at async Arborist.buildIdealTree (/opt/homebrew/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:182:7)
+    at async Promise.all (index 1)
+    at async Arborist.reify (/opt/homebrew/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/reify.js:130:5)
+58 verbose type system
+59 verbose stack FetchError: Invalid response body while trying to fetch https://registry.npmjs.org/@eslint%2fjs: EPERM: operation not permitted, open '/Users/bidang4/Projects/3_Other_Projects/ZakatTrack/frontend/.npm-cache/_cacache/tmp/601d74b4'
+59 verbose stack     at /opt/homebrew/lib/node_modules/npm/node_modules/minipass-fetch/lib/body.js:170:15
+59 verbose stack     at async Response.json (/opt/homebrew/lib/node_modules/npm/node_modules/minipass-fetch/lib/body.js:75:17)
+59 verbose stack     at async RegistryFetcher.packument (/opt/homebrew/lib/node_modules/npm/node_modules/pacote/lib/registry.js:98:25)
+59 verbose stack     at async RegistryFetcher.manifest (/opt/homebrew/lib/node_modules/npm/node_modules/pacote/lib/registry.js:128:23)
+59 verbose stack     at async #fetchManifest (/opt/homebrew/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:1213:20)
+59 verbose stack     at async #nodeFromEdge (/opt/homebrew/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:1051:19)
+59 verbose stack     at async #buildDepStep (/opt/homebrew/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:915:11)
+59 verbose stack     at async Arborist.buildIdealTree (/opt/homebrew/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:182:7)
+59 verbose stack     at async Promise.all (index 1)
+59 verbose stack     at async Arborist.reify (/opt/homebrew/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/reify.js:130:5)
+60 error code EPERM
+61 error syscall open
+62 error path /Users/bidang4/Projects/3_Other_Projects/ZakatTrack/frontend/.npm-cache/_cacache/tmp/601d74b4
+63 error errno EPERM
+64 error
+64 error Your cache folder contains root-owned files, due to a bug in
+64 error previous versions of npm which has since been addressed.
+64 error
+64 error To permanently fix this problem, please run:
+64 error   sudo chown -R 501:20 "/Users/bidang4/Projects/3_Other_Projects/ZakatTrack/frontend/.npm-cache"
+65 silly unfinished npm timer reify 1774408264953
+66 silly unfinished npm timer reify:loadTrees 1774408264953
+67 verbose cwd /Users/bidang4/Projects/3_Other_Projects/ZakatTrack/frontend
+68 verbose os Darwin 25.3.0
+69 verbose node v24.2.0
+70 verbose npm  v11.3.0
+71 notice
+71 notice New [33mminor[39m version of npm available! [33m11.3.0[39m -> [34m11.12.0[39m
+71 notice Changelog: [34mhttps://github.com/npm/cli/releases/tag/v11.12.0[39m
+71 notice To update run: [4mnpm install -g npm@11.12.0[24m
+71 notice  { force: true, Symbol(proc-log.meta): true }
+72 verbose exit 1
+73 verbose code 1
+74 error A complete log of this run can be found in: /Users/bidang4/Projects/3_Other_Projects/ZakatTrack/frontend/.npm-cache/_logs/2026-03-25T03_11_04_654Z-debug-0.log

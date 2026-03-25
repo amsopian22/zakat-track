@@ -26,6 +26,8 @@ class MustahikModel(Base):
     water_source = Column(String)
     floor_material = Column(String)
     wall_material = Column(String)
+    is_debtor = Column(Integer, default=0)    # 0: Tidak, 1: Ya (Gharimin)
+    is_student = Column(Integer, default=0)   # 0: Tidak, 1: Ya (Fi Sabilillah)
     
     # Meta
     asnaf_category = Column(String)

@@ -21,6 +21,8 @@ class MustahikCreate(BaseModel):
     water_source: Optional[str] = None
     floor_material: Optional[str] = None
     wall_material: Optional[str] = None
+    is_debtor: int = Field(0, ge=0, le=1) 
+    is_student: int = Field(0, ge=0, le=1)
 
     @field_validator('lat')
     @classmethod
